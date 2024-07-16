@@ -1,95 +1,46 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// "use client";
+import { Suspense } from "react";
+import { View } from "./_/View";
+import { echo } from "@/server/echo";
 
-export default function Home() {
+// export const dynamic = "force-dynamic";
+
+export default function Page() {
+  console.log("component: Page");
+
+  /** next build 時にエラー。
+   * Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+   * TypeError: Failed to parse URL from /api/echo?message=hello
+   */
+  /** "use client" にする必要があるが、 next dev 時にもサーバサイドエラーが出ている。
+   */
+  // const message = fetch("/api/echo?message=hello").then((response) => response.json());
+
+  /** next build 時、ページは Dynamic として扱われる。
+   * ┌ ƒ /                                    137 B          87.2 kB
+   * ├ ○ /_not-found                          871 B          87.9 kB
+   * └ ƒ /api/echo                            0 B                0 B
+   *
+   * ○  (Static)   prerendered as static content
+   * ƒ  (Dynamic)  server-rendered on demand
+   */
+  /** next build → next start 後、ページを開くと、一瞬 "loading" が見えたあと、サーバサイドエラーになる。
+   * TypeError: Failed to parse URL from /api/echo?message=hello
+   */
+  /** "use client" にする必要があるが、 next dev 時にもサーバサイドエラーが出ている。
+   */
+  // const message = fetch("/api/echo?message=hello", { cache: "no-store" }).then((response) => response.json());
+
+  // Server Actions の形。
+  // ※ `export const dynamic = "force-dynamic";` にすると Dynamic として扱われる。
+  // ※ `"use client"` にするとエラーになる。（RSCにする必要がある）
+  const message = echo(new Date().toLocaleString());
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <div>
+      <Suspense fallback="loading">
+        <View promise={message} />
+      </Suspense>
+    </div>
   );
 }
